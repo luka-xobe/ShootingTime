@@ -1,42 +1,67 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(CharacterController))]
 public class PlayerMovement : MonoBehaviour
 {
+
+    [SerializeField] private float speed = 10;
+    [SerializeField] private float gravity = -20f;
+    [SerializeField] private float jumpHeight = 2;
+    [SerializeField] private float runMultiplier = 2;
+    [SerializeField, Range(0f, 90f)] private float jumpSlopeLimit;
+
     [SerializeField] Transform playerCamera = null;
-    [SerializeField] float mouseSensitivity = 3.5f;
-    [SerializeField] float walkSpeed = 6.0f;
-    [SerializeField] float gravity = -13.0f;
+    Vector2 currentMouseDelta = Vector2.zero;
+    Vector2 currentMouseDeltaVelocity = Vector2.zero;
+    float cameraPitch = 0.0f;
+
+    private CharacterController charController;
+    private float jumpMult;
+    private float yVelocity;
+    private float originalSlopeLimit;
+    private bool isGrounded;
+    
+    // Mouse look
+    private float xRotation = 0f;
+    [SerializeField] private float mouseSensitivity;
+    [SerializeField] private Transform mainCam;
     [SerializeField] [Range(0.0f, 0.5f)] float moveSmoothTime = 0.3f;
     [SerializeField] [Range(0.0f, 0.5f)] float mouseSmoothTime = 0.03f;
 
-    [SerializeField] bool lockCursor = true;
-
-    float cameraPitch = 0.0f;
-    float velocityY = 0.0f;
-    CharacterController controller = null;
-
-    Vector2 currentDir = Vector2.zero;
-    Vector2 currentDirVelocity = Vector2.zero;
-
-    Vector2 currentMouseDelta = Vector2.zero;
-    Vector2 currentMouseDeltaVelocity = Vector2.zero;
-
-    void Start()
+    private void Start()
     {
-        controller = GetComponent<CharacterController>();
-        if (lockCursor)
-        {
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-        }
+        charController = GetComponent<CharacterController>();
+
+        originalSlopeLimit = charController.slopeLimit;
+        jumpMult = Mathf.Sqrt(jumpHeight * -2f * gravity);
+
+        // Hide mouse and lock to screen center
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
     }
 
     void Update()
     {
+
+        // Allow player control of mouse sensitivity
+        if (Input.GetKeyDown(KeyCode.Equals)) mouseSensitivity = Mathf.Clamp(mouseSensitivity + 20, 20f, 1000f);
+        if (Input.GetKeyDown(KeyCode.Minus)) mouseSensitivity = Mathf.Clamp(mouseSensitivity - 20, 20f, 1000f);
+
+        PlayerMove();
         UpdateMouseLook();
-        UpdateMovement();
+    }
+
+    // Do camera rotation in LateUpdate, or you get stutter
+    void LateUpdate()
+    {
+        float mouseX = Input.GetAxis("Mouse X") * mouseSensitivity * Time.deltaTime;
+        float mouseY = Input.GetAxis("Mouse Y") * mouseSensitivity * Time.deltaTime;
+
+        xRotation -= mouseY;
+        xRotation = Mathf.Clamp(xRotation, -80f, 70f); // Can't look too far up or down
+
+        mainCam.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
+        transform.Rotate(Vector3.up * mouseX);
     }
 
     void UpdateMouseLook()
@@ -52,21 +77,41 @@ public class PlayerMovement : MonoBehaviour
         transform.Rotate(Vector3.up * currentMouseDelta.x * mouseSensitivity);
     }
 
-    void UpdateMovement()
+
+
+    private void PlayerMove()
     {
-        Vector2 targetDir = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
-        targetDir.Normalize();
+        isGrounded = charController.isGrounded;
+        if (charController.isGrounded || charController.collisionFlags == CollisionFlags.Above) yVelocity = -0.1f;
 
-        currentDir = Vector2.SmoothDamp(currentDir, targetDir, ref currentDirVelocity, moveSmoothTime);
+        if (charController.isGrounded)
+        {
+            charController.slopeLimit = originalSlopeLimit;
+        }
+        else
+        {
+            charController.slopeLimit = jumpSlopeLimit;
+        }
 
-        if (controller.isGrounded)
-            velocityY = 0.0f;
+        float x = Input.GetAxisRaw("Horizontal");
+        float z = Input.GetAxisRaw("Vertical");
 
-        velocityY += gravity * Time.deltaTime;
+        Vector3 move = (transform.right * x + transform.forward * z).normalized;
+        move = move * speed * Time.deltaTime;
 
-        Vector3 velocity = (transform.forward * currentDir.y + transform.right * currentDir.x) * walkSpeed + Vector3.up * velocityY;
+        if (Input.GetKey(KeyCode.LeftShift)) move *= runMultiplier;
 
-        controller.Move(velocity * Time.deltaTime);
+        if (Input.GetButtonDown("Jump") && charController.isGrounded)
+        {
+            yVelocity += jumpMult;
+        }
 
+        yVelocity += gravity * Time.deltaTime;
+
+        move.y = yVelocity * Time.deltaTime;
+
+        charController.Move(move);
     }
+
+
 }
