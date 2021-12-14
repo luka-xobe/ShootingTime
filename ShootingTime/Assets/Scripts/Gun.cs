@@ -7,7 +7,7 @@ public class Gun : MonoBehaviour
 
     public float damage = 10f;
     public float range = 100f;
-    public float ReloadTime = 3f;
+    public float ReloadTime = 2f;
     private float ReloadTimeSec = 0f;
 
     public Camera fpsCam;
@@ -29,11 +29,16 @@ public class Gun : MonoBehaviour
         }
 
         ReloadTimeSec += Time.deltaTime;
+
+        while (ReloadTimeSec < ReloadTime)
+        {
+            FindObjectOfType<AudioManager>().Play("Gunshot");
+        }
     }
 
     void Shoot()
     {
-        
+        FindObjectOfType<AudioManager>().Play("Gunshot");
         GunShot_Smoke_FX.Play();
         RaycastHit hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
