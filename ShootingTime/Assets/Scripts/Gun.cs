@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Gun : MonoBehaviour
 {
@@ -20,6 +21,8 @@ public class Gun : MonoBehaviour
 
     public Animator animator;
 
+    public Text ammoAmoutText;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -30,20 +33,31 @@ public class Gun : MonoBehaviour
     void Update()
     {
 
+        ammoAmoutText.text = currentAmmo.ToString();
+
+
         if (isReloading)
             return;
 
         if (currentAmmo <= 0)
         {
-            StartCoroutine(Reload());
-            Reload();
-            return;
+            Debug.Log("NO AMMO!");
+
+            //TURNING OFF GAME OBJECT
+            gameObject.SetActive(false);
+
+
+            //StartCoroutine(Reload());
+            //Reload();
+            //return;
         }
 
         if (Input.GetButtonDown("Fire1") && ReloadTime < ReloadTimeSec)
         {
             Shoot();
+            
             ReloadTimeSec = 0;
+            
         }
 
         ReloadTimeSec += Time.deltaTime;
@@ -78,14 +92,16 @@ public class Gun : MonoBehaviour
 
     void Shoot()
     {
-        //animator.SetBool("Shoot", true);
 
+        // animator.SetBool("Shoot", true);
+        animator.Play("WeaponShooting");
+        //animator.SetBool("Shoot", false);
         currentAmmo--;
 
 
         FindObjectOfType<AudioManager>().Play("Gunshot");
         GunShot_Smoke_FX.Play();
-        //animator.SetBool("Shoot", false);
+        
         FindObjectOfType<AudioManager>().Play("Handgun reload");
         RaycastHit hit;
         if (Physics.Raycast(fpsCam.transform.position, fpsCam.transform.forward, out hit, range))
@@ -104,4 +120,9 @@ public class Gun : MonoBehaviour
         
 
     }
+
+
+
+
+
 }
