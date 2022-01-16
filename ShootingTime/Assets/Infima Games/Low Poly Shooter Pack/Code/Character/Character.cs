@@ -1327,6 +1327,7 @@ namespace InfimaGames.LowPolyShooterPack
 			}
 		}
 		
+
 		/// <summary>
 		/// Jump. 
 		/// </summary>
