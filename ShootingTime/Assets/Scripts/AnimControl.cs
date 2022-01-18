@@ -16,15 +16,28 @@ public class AnimControl : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        int Velocityhash = 0;
+
         if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            theNPC.GetComponent<Animator>().Play("Idle");
+            theNPC.GetComponent<Animator>().SetBool("Idle", true);
         }
 
 
         if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            theNPC.GetComponent<Animator>().Play("Jump");
+            theNPC.GetComponent<Animator>().SetBool("Jump", true);
+        }
+
+        if (Input.GetKeyDown(KeyCode.RightArrow))
+        {
+            theNPC.GetComponent<Animator>().SetBool("Move", true);
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        {
+            //Velocityhash = theNPC.GetComponent<Animator>().StringToHash("RFLF");
+            theNPC.GetComponent<Animator>().SetFloat(Velocityhash, 0);
         }
     }
 }
