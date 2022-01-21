@@ -2,6 +2,7 @@
 
 using UnityEngine;
 
+
 namespace InfimaGames.LowPolyShooterPack
 {
     /// <summary>
@@ -9,8 +10,12 @@ namespace InfimaGames.LowPolyShooterPack
     /// </summary>
     public class Weapon : WeaponBehaviour
     {
-        #region FIELDS SERIALIZED
         
+
+
+
+        #region FIELDS SERIALIZED
+
         [Header("Settings")]
         
         [Tooltip("Weapon Name. Currently not used for anything, but in the future, we will use this for pickups!")]
@@ -46,6 +51,11 @@ namespace InfimaGames.LowPolyShooterPack
         [Tooltip("Amount of shots this weapon can shoot in a minute. It determines how fast the weapon shoots.")]
         [SerializeField] 
         private int roundsPerMinutes = 200;
+
+        [Header("Damage")]
+        [Tooltip("Amount of damaged the gun makes")]
+        [SerializeField]
+        public int damageAmount = 5;
 
         [Tooltip("Mask of things recognized when firing.")]
         [SerializeField]
@@ -157,6 +167,8 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region FIELDS
 
+       
+
         /// <summary>
         /// Weapon Animator.
         /// </summary>
@@ -251,7 +263,11 @@ namespace InfimaGames.LowPolyShooterPack
 
             //Max Out Ammo.
             ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
+            
+            
         }
+
+   
 
         #endregion
 
@@ -387,9 +403,24 @@ namespace InfimaGames.LowPolyShooterPack
                 //Spawn projectile from the projectile spawn point.
                 GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
                 //Add velocity to the projectile.
-                projectile.GetComponent<Rigidbody>().velocity = projectile.transform.forward * projectileImpulse;   
+                projectile.GetComponent<Rigidbody>().velocity = projectile.transform.forward * projectileImpulse;
+                
+                int enemyDamage = 0;
+                void OnCollisionEnter (Collision col)
+                {
+                    
+
+                    if (col.gameObject.name == "Enemy")
+                    {
+                        enemyDamage++;
+                    }
+                }
             }
-        }
+
+      
+    }
+
+ 
 
         public override void FillAmmunition(int amount)
         {
