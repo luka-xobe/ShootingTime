@@ -167,8 +167,8 @@ namespace InfimaGames.LowPolyShooterPack
 
         #region FIELDS
 
-       
 
+        Component component;
         /// <summary>
         /// Weapon Animator.
         /// </summary>
@@ -263,7 +263,8 @@ namespace InfimaGames.LowPolyShooterPack
 
             //Max Out Ammo.
             ammunitionCurrent = magazineBehaviour.GetAmmunitionTotal();
-            
+
+            component = GetComponent<DamageFromWeapon>();
             
         }
 
@@ -404,17 +405,8 @@ namespace InfimaGames.LowPolyShooterPack
                 GameObject projectile = Instantiate(prefabProjectile, muzzleSocket.position, rotation);
                 //Add velocity to the projectile.
                 projectile.GetComponent<Rigidbody>().velocity = projectile.transform.forward * projectileImpulse;
-                
-                int enemyDamage = 0;
-                void OnCollisionEnter (Collision col)
-                {
-                    
+                //projectile.AddComponent<DamageFromWeapon>();
 
-                    if (col.gameObject.name == "Enemy")
-                    {
-                        enemyDamage++;
-                    }
-                }
             }
 
       
